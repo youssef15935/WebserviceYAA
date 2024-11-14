@@ -1,8 +1,8 @@
 const express = require('express');
+const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoutes');
-const cors = require('cors');
 const multer = require('multer');
 const Project = require('./models/Project');
 
@@ -13,8 +13,23 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// Middleware
-app.use(cors({ origin: 'https://yaarchitecte.vercel.app' })); // Use CORS with your frontend origin
+// Allowed origins for both development and production
+const allowedOrigins = ['https://yaarchitecte.vercel.app', 'http://localhost:3000'];
+
+// CORS configuration
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true // Allow credentials if needed
+}));
+
 app.use(express.json());
 
 // Configure Multer for file uploads
@@ -39,8 +54,8 @@ app.post('/api/projects', upload.single('image'), async (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes); // Ensure this route doesn’t conflict with the POST route above
+app.use('/api/projects', projectRoutes); 
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
