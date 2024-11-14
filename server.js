@@ -4,35 +4,30 @@ const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const cors = require('cors');
 const multer = require('multer');
-const Project = require('./models/Project'); // Assurez-vous que le modèle Project est importé correctement
-const { login } = require('./controllers/authController');
-const { getProjects } = require('./controllers/adminController');
-const authenticate = require('./middleware/authenticate');
+const Project = require('./models/Project');
+
 require('dotenv').config();
-const router = express.Router();
-const app = express(); // Déclarez app ici
 
+const app = express();
 
-
-// Connexion à la base de données
+// Connect to Database
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: 'https://yaarchitecte.vercel.app' })); // Use CORS with your frontend origin
 app.use(express.json());
 
-// Configuration de multer pour l'upload de fichiers
+// Configure Multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
-// Rendre le dossier 'uploads' accessible publiquement
+// Serve static files from the "uploads" folder
 app.use('/uploads', express.static('uploads'));
 
-
-// Route pour ajouter un projet avec image
+// Route to add a project with an image
 app.post('/api/projects', upload.single('image'), async (req, res) => {
   try {
     const { title, description } = req.body;
-    const src = req.file ? `/uploads/${req.file.filename}` : ''; // Enregistrer le chemin de l'image
+    const src = req.file ? `/uploads/${req.file.filename}` : ''; // Save the path to the image
 
     const newProject = new Project({ title, description, src });
     await newProject.save();
@@ -44,11 +39,8 @@ app.post('/api/projects', upload.single('image'), async (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-router.post('/login', login);
-router.get('/projects', authenticate, getProjects);
-app.use(cors({ origin: 'https://yaarchitecte.vercel.app' }));
+app.use('/api/projects', projectRoutes); // Ensure this route doesn’t conflict with the POST route above
 
-
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Serveur démarré sur le port ${PORT}`));
