@@ -14,7 +14,7 @@ const app = express();
 connectDB();
 
 // Allowed origins for both development and production
-const allowedOrigins = ['https://yaarchitecte.vercel.app', 'http://localhost:3000'];
+const allowedOrigins = ['https://yaarchitecte.vercel.app', 'http://localhost:3000', 'https://adminyaa.vercel.app/admin','http://localhost:3001/admin']
 
 // CORS configuration
 app.use(cors({
